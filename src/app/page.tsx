@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import {
   getTodos,
@@ -10,11 +11,12 @@ import {
 import { Todo } from '@prisma/client';
 import OnlineStatus from '@/components/OnlineStatus';
 import { useStatusStore } from '@/stores/statusState';
+import { CloudOffIcon, CloudUploadIcon } from 'lucide-react';
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
-  const { isOnline, setOnline, setSyncing, setChanges } = useStatusStore();
+  const { isOnline, setSyncing, setChanges } = useStatusStore();
 
   const loadTodos = async () => {
     const todos = await getTodos();
@@ -36,26 +38,14 @@ export default function Home() {
 
   useEffect(() => {
     handleSyncTodos();
-
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
   }, []);
 
   useEffect(() => {
     if (isOnline) {
       handleSyncTodos();
-      console.log('isOnline');
       setChanges(false);
     }
-  }, [isOnline]); // add hasChanges to up-to-date sync
+  }, [isOnline]);
 
   const handleAddTodo = async () => {
     if (newTodo.trim()) {
@@ -87,17 +77,36 @@ export default function Home() {
     setChanges(true);
   };
 
+  if (isOnline === null) return null;
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
+      <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6">
+        <div className="flex flex-col items-center justify-between mb-6 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
           <h1 className="text-2xl font-bold text-gray-800">Todo App</h1>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <OnlineStatus />
+            {isOnline ? (
+              <button
+                onClick={handleSyncTodos}
+                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                <CloudUploadIcon className="w-4 h-4 mr-2" />
+                Sync
+              </button>
+            ) : (
+              <button
+                disabled
+                className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md cursor-not-allowed"
+              >
+                <CloudOffIcon className="w-4 h-4 mr-2" />
+                Sync
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="flex space-x-2 mb-6">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-6">
           <input
             type="text"
             value={newTodo}

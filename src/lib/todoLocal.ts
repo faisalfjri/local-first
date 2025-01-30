@@ -98,8 +98,8 @@ export const syncTodos = async (): Promise<void> => {
       const remoteTodo = remoteTodos.find((t) => t.id === localTodo.id);
 
       if (!remoteTodo) {
-        // If the todo doesn't exist on the backend, add it
-        await addRemoteTodo(localTodo);
+        // If the todo doesn't exist on the backend, delete it on the local
+        await db.todos.delete(localTodo.id);
       }
     }
   } catch (error) {
