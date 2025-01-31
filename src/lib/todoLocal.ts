@@ -84,10 +84,13 @@ export const syncTodos = async (): Promise<void> => {
     for (const remoteTodo of remoteTodos as Todo[]) {
       const localTodo = localTodos.find((t) => t.id === remoteTodo.id);
 
+      const remoteUpdatedAt = new Date(remoteTodo.updatedAt); // Sudah dalam UTC
+      const localUpdatedAt = localTodo ? new Date(localTodo.updatedAt) : null;
+
       if (!localTodo) {
         // If the todo doesn't exist locally, add it
         await db.todos.add(remoteTodo);
-      } else if (remoteTodo.updatedAt > localTodo.updatedAt) {
+      } else if (remoteUpdatedAt > localUpdatedAt!) {
         // If the remote todo is newer, update the local todo
         await db.todos.update(remoteTodo.id, remoteTodo);
       }
