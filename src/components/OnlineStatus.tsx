@@ -1,7 +1,6 @@
 'use client';
 import { useStatusStore } from '@/stores/statusState';
 import { CheckIcon, CloudAlertIcon, LoaderIcon } from 'lucide-react';
-import { CloudOffIcon } from 'lucide-react';
 import { useEffect } from 'react';
 
 const OnlineStatus = () => {
@@ -29,11 +28,7 @@ const OnlineStatus = () => {
   let message = '';
   let color = '';
 
-  if (!isOnline) {
-    icon = <CloudOffIcon className="animate-pulse text-red-700" />;
-    message = 'Offline';
-    color = 'bg-red-100 text-red-700';
-  } else if (isSyncing) {
+  if (isSyncing) {
     icon = <LoaderIcon className="animate-spin text-blue-700" />;
     message = 'Syncing...';
     color = 'bg-blue-100 text-blue-700';

@@ -23,13 +23,13 @@ export default function Home() {
     setTodos(todos);
   };
 
-  const handleSyncTodos = async () => {
+  const syncAndLoadTodos = async () => {
     try {
       setSyncing(true);
       await syncTodos();
       loadTodos();
     } catch (error) {
-      console.log(error);
+      console.error('Error syncing todos:', error);
     } finally {
       setSyncing(false);
       setChanges(false);
@@ -37,15 +37,25 @@ export default function Home() {
   };
 
   useEffect(() => {
-    handleSyncTodos();
+    syncAndLoadTodos();
   }, []);
 
-  useEffect(() => {
+  // Function to handle synchronization of todos based on online status.
+  // useEffect(() => {
+  //   if (isOnline) {
+  //     syncAndLoadTodos();
+  //   }
+  // }, [isOnline]);
+
+  const handleTodoSync = async () => {
+    loadTodos();
+
     if (isOnline) {
-      handleSyncTodos();
-      setChanges(false);
+      await syncTodos();
+    } else {
+      setChanges(true);
     }
-  }, [isOnline]);
+  };
 
   const handleAddTodo = async () => {
     if (newTodo.trim()) {
@@ -57,8 +67,7 @@ export default function Home() {
         version: 0
       });
       setNewTodo('');
-      loadTodos();
-      setChanges(true);
+      handleTodoSync();
     }
   };
 
@@ -66,15 +75,13 @@ export default function Home() {
     const todo = todos.find((t) => t.id === id);
     if (todo) {
       await updateTodo(id, { completed: !todo.completed });
-      loadTodos();
-      setChanges(true);
+      handleTodoSync();
     }
   };
 
   const handleDeleteTodo = async (id: string) => {
     await deleteTodo(id);
-    loadTodos();
-    setChanges(true);
+    handleTodoSync();
   };
 
   if (isOnline === null) return null;
@@ -88,7 +95,7 @@ export default function Home() {
             <OnlineStatus />
             {isOnline ? (
               <button
-                onClick={handleSyncTodos}
+                onClick={syncAndLoadTodos}
                 className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
               >
                 <CloudUploadIcon className="w-4 h-4 mr-2" />
